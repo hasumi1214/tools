@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<title>毎日のボイトレ</title>
+<meta name="theme-color" content="#5b4ea3">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ボイトレ">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%235b4ea3'/%3E%3Ctext x='50' y='70' font-family='sans-serif' font-size='56' font-weight='700' fill='white' text-anchor='middle'%3E%E5%A3%B0%3C/text%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%235b4ea3'/%3E%3Ctext x='90' y='128' font-family='sans-serif' font-size='100' font-weight='700' fill='white' text-anchor='middle'%3E%E5%A3%B0%3C/text%3E%3C/svg%3E">
+<link rel="manifest" href='data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22%E6%AF%8E%E6%97%A5%E3%81%AE%E3%83%9C%E3%82%A4%E3%83%88%E3%83%AC%22%2C%22short_name%22%3A%22%E3%83%9C%E3%82%A4%E3%83%88%E3%83%AC%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23faf7f2%22%2C%22theme_color%22%3A%22%235b4ea3%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%253Csvg%2520xmlns%253D%2527http%253A%252F%252Fwww.w3.org%252F2000%252Fsvg%2527%2520viewBox%253D%25270%25200%2520512%2520512%2527%253E%253Crect%2520width%253D%2527512%2527%2520height%253D%2527512%2527%2520rx%253D%2527112%2527%2520fill%253D%2527%25235b4ea3%2527%252F%253E%253Ctext%2520x%253D%2527256%2527%2520y%253D%2527365%2527%2520font-family%253D%2527sans-serif%2527%2520font-size%253D%2527288%2527%2520font-weight%253D%2527700%2527%2520fill%253D%2527white%2527%2520text-anchor%253D%2527middle%2527%253E%25E5%25A3%25B0%253C%252Ftext%253E%253C%252Fsvg%253E%22%2C%22sizes%22%3A%22any%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%2C%22purpose%22%3A%22any%20maskable%22%7D%5D%7D'>
+<style>
+:root { color-scheme: light; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Hiragino Sans", "Noto Sans JP", "Yu Gothic UI", sans-serif;
+  background: #faf7f2;
+  color: #2a2a2a;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  padding: max(20px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
+  line-height: 1.6;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.app { max-width: 560px; width: 100%; }
+@media (max-width: 480px) {
+  body { padding: 16px; padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); }
+  .card { padding: 24px 20px !important; border-radius: 16px !important; }
+  .exercise-name { font-size: 19px !important; }
+  .timer { font-size: 52px !important; }
+  .cues li { font-size: 14px !important; padding: 9px 0 9px 20px !important; }
+  button { padding: 16px 10px !important; font-size: 15px !important; }
+}
+.progress-bar {
+  height: 6px;
+  background: #ebe7e0;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #5b4ea3, #ee9b6e);
+  transition: width 0.4s ease;
+  width: 0%;
+}
+.step-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+  font-size: 13px;
+  color: #6b6b6b;
+}
+.section-tag {
+  display: inline-block;
+  padding: 5px 12px;
+  background: #ede9ff;
+  color: #5b4ea3;
+  border-radius: 14px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+.card {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 32px 28px;
+  box-shadow: 0 4px 28px rgba(50, 40, 80, 0.06);
+  border: 1px solid #ebe7e0;
+}
+.exercise-name {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 18px;
+  color: #2a2a2a;
+  line-height: 1.4;
+}
+.timer {
+  font-size: 60px;
+  font-weight: 200;
+  text-align: center;
+  letter-spacing: 3px;
+  color: #5b4ea3;
+  margin: 4px 0 22px;
+  font-variant-numeric: tabular-nums;
+  transition: color 0.3s ease;
+}
+.timer.paused { color: #b0a8c8; }
+.timer.done { color: #ee9b6e; }
+.timer.rest { color: #6b9b7e; }
+.section-tag.rest { background: #e4efe8; color: #4a7a5e; }
+.rest-label {
+  font-size: 12px;
+  color: #6b9b7e;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+.cues {
+  list-style: none;
+  padding: 0;
+  margin-bottom: 6px;
+}
+.cues li {
+  position: relative;
+  padding: 10px 0 10px 22px;
+  font-size: 15px;
+  color: #2a2a2a;
+  border-bottom: 1px dashed #ebe7e0;
+}
+.cues li:last-child { border-bottom: none; }
+.cues li::before {
+  content: "›";
+  position: absolute;
+  left: 4px;
+  top: 8px;
+  color: #ee9b6e;
+  font-weight: 700;
+  font-size: 18px;
+}
+.controls {
+  display: flex;
+  gap: 10px;
+  margin-top: 22px;
+}
+button {
+  padding: 14px 12px;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+  flex: 1;
+}
+.btn-secondary {
+  background: #f2efea;
+  color: #5b4ea3;
+}
+.btn-secondary:hover:not(:disabled) { background: #ebe7e0; }
+.btn-primary {
+  background: #5b4ea3;
+  color: white;
+  flex: 1.6;
+}
+.btn-primary:hover { background: #4a3f8a; }
+button:disabled { opacity: 0.35; cursor: not-allowed; }
+.finished { text-align: center; padding: 30px 10px; }
+.finished h2 {
+  font-size: 26px;
+  color: #5b4ea3;
+  margin-bottom: 14px;
+}
+.finished p {
+  color: #6b6b6b;
+  margin-bottom: 26px;
+  font-size: 14px;
+}
+.restart-btn {
+  background: #5b4ea3;
+  color: white;
+  padding: 12px 28px;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.restart-btn:hover { background: #4a3f8a; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+  <div class="step-meta">
+    <span class="section-tag" id="section">セクション</span>
+    <span id="step-count">1 / 18</span>
+  </div>
+  <div class="card" id="card">
+    <div class="exercise-name" id="exercise-name">エクササイズ名</div>
+    <div class="timer" id="timer">00:00</div>
+    <ul class="cues" id="cues"></ul>
+    <div class="controls">
+      <button class="btn-secondary" id="back-btn">← 戻る</button>
+      <button class="btn-secondary" id="pause-btn">⏸ 一時停止</button>
+      <button class="btn-primary" id="next-btn">次へ →</button>
+    </div>
+  </div>
+</div>
+<script>
+const exercises = [
+  {section: "① ストレッチ＆舌根リリース", name: "首・肩回し＋あくび", duration: 60, cues: ["首回し30秒、肩回し30秒","間にあくびを混ぜて軟口蓋up","あくびの瞬間の喉奥が開く感覚を覚える"]},
+  {section: "① ストレッチ＆舌根リリース", name: "顎下マッサージ", duration: 30, cues: ["両手親指で顎の下（舌の根元）をぐっと押す","痛気持ちいいくらいの圧で30秒"]},
+  {section: "① ストレッチ＆舌根リリース", name: "舌出しストレッチ", duration: 30, cues: ["舌を限界まで前に出す","10秒キープ × 3回","喉奥の伸び感が出ればOK"]},
+  {section: "① ストレッチ＆舌根リリース", name: "舌スパイダー", duration: 40, cues: ["舌先を下前歯の裏にぴったり当てたまま","口を「アー」「エー」と動かす（舌は動かさない）","20秒 × 2"]},
+  {section: "① ストレッチ＆舌根リリース", name: "ドッグブレス", duration: 20, cues: ["腹で「ハッハッハッ」","10秒 × 2セット","腹圧スイッチON"]},
+  {section: "① ストレッチ＆舌根リリース", name: "サイレントブレス", duration: 45, cues: ["4秒吸って8秒で「スーッ」","2セット","吐き終わりも腹を固めたまま"]},
+  {section: "② SOVT＋舌前出し", name: "ストロー発声グリッサンド", duration: 60, cues: ["細めのストローで低→高→低のグリッサンド","3往復","頬骨と鼻の振動を感じる位置で"]},
+  {section: "② SOVT＋舌前出し", name: "タングトリル下行", duration: 70, cues: ["♪ 5-4-3-2-1（下行）を「ルルル」で","▶ 最高音 C4 → A3 まで半音ずつ下げる","舌が詰まらない＝舌根が緩んでる証拠","詰まったら顎下マッサージに戻る"]},
+  {section: "② SOVT＋舌前出し", name: "舌出し「アー」発声", duration: 60, cues: ["♪ 5-3-1（下行）","▶ 最高音 F3 ⇄ C4 を半音ずつ上下移調","舌を前歯の上に乗せたまま","舌が引っ込んだら一度止める"]},
+  {section: "② SOVT＋舌前出し", name: "「ニー」スケール", duration: 90, cues: ["♪ 1-3-5-3-1（アーチ）","▶ 最低音 C3 → E3 まで半音ずつ上げる","「ニ」は舌が前に来る母音子音","鏡で舌が奥に逃げてないか確認"]},
+  {section: "③ 換声点＆ミックス開発", name: "(A)「ング」ハミング下行", duration: 90, cues: ["♪ 5-4-3-2-1（下行）を「ンガ」じゃなく「ング(ng)」で","▶ 最高音 E4 → A3 まで半音ずつ下げる","舌の奥が上顎にくっついた状態","鼻の奥がビリビリすればOK"]},
+  {section: "③ 換声点＆ミックス開発", name: "(B)「ネイ」1オクターブアルペジオ", duration: 200, cues: ["♪ 1-3-5-8-5-3-1（オクターブアーチ）","▶ 最低音 A3 → F4 まで半音ずつ上げ、F4まで来たら折り返して下げる","「ネ」のたびに舌先が上前歯の裏に触る","G♯4〜A4 で音量を上げない・閉めない","重く感じたらストローに戻して1セット"]},
+  {section: "③ 換声点＆ミックス開発", name: "(C) ファルセット→ミックス→地声スライド", duration: 150, cues: ["▶ A4〜C5 の裏声から C3 の地声まで「ウー」or「ユー」で一筆書きグライド","裏声側を太く、地声側を細く","1回目は超弱音、2回目は少し量、3回目はキープ","3往復"]},
+  {section: "③＋ 閉鎖切り替え", name: "エッジ・トグル", duration: 30, cues: ["▶ 音域 C3〜E3 の1音で「アー」","vocal fry（エッジ・ジリッ）→ 普通の声 → エッジ → 普通…を5往復","同じ音程のまま、TAが入ってる/切れてる感覚を覚える","エッジ側は喉を絞めない、息を止めない"]},
+  {section: "③＋ 閉鎖切り替え", name: "mezza voce → forte グラデーション", duration: 60, cues: ["▶ D4〜F4 の1音で最弱の mezza voce（小声でも芯あり）→ 5段階で量だけ増やして forte へ","各段階2秒キープ・違うキーで3〜4回","【鉄則】最弱の段階でも声帯閉鎖はOFFにしない・息漏れさせない","逆方向（forte→mezza voce）も1セット、閉鎖を保ったまま量だけ絞る"]},
+  {section: "③＋ 閉鎖切り替え", name: "fry → ナッ → 抜き ドリル", duration: 60, cues: ["低音域でvocal fry（エッジ）を1拍安着 → 即「ナッ」で A4〜C5 を発声 → fryに戻る","【鉄則】全工程で閉鎖ON、ウィスパー（息声）には絶対通さない","子音は ナ／ヤ／マ（「ハ」NG＝息混じる）","fry の振動を保ったまま音だけ上に飛ばすイメージ"]},
+  {section: "④ 響き探し", name: "「ング→アー」", duration: 75, cues: ["♪ 5-3-1（下行）","「ング(ng)」で鼻奥がビリつく位置を見つけてから口を開けて「アー」","▶ 最高音 D4 → A4 まで半音ずつ上げる","鳴ってる場所をキープしたまま音を変える"]},
+  {section: "④ 響き探し", name: "高音「フー」頭抜き", duration: 60, cues: ["▶ 音域 A4〜C5 を裏声寄りの「フー」で","眉間より上、頭頂の後ろに当てる","3往復だけ"]},
+  {section: "⑤ 軽さ定着", name: "「ノ」or「ニョ」9度スケール", duration: 150, cues: ["♪ 1-3-5-8-10-8-5-3-1（9度アーチ、10=9度上）","▶ 最低音 E3 → E4 まで半音ずつ上げる","トップ音は頭頂から後ろに抜く（④の位置）","セット間に舌出し「アー」で5秒リセット"]},
+  {section: "⑥ 実曲＆クールダウン", name: "B→サビ移行リハーサル", duration: 90, cues: ["実曲のBメロ最後2小節（mezza voce＝小声でも閉鎖ON）→ サビ頭2小節（forte）だけ抜き出す","【鉄則】Bメロをウィスパーにしない、聴感は弱くても閉鎖は保つ","5回連続。最初は半テンポでもOK","Aメロから通さない（疲労と慣れで境目が雑になる）","録音必須・閉鎖が落ちずに量だけ増えてるか確認"]},
+  {section: "⑥ 実曲＆クールダウン", name: "サビ1フレーズ練習", duration: 100, cues: ["米津/Ado のサビを抜き出して 半音下げ → 原キー の順","例：Lemon、KICK BACK、うっせぇわ のサビ頭","録音して換声点で張ったか・音程ブレてないかチェック"]},
+  {section: "⑥ 実曲＆クールダウン", name: "リップロール下行クールダウン", duration: 60, cues: ["▶ 音域 G2〜C3 の低音域でリップロール下行","完全脱力で締めくくる"]},
+];
+
+const total = exercises.length;
+const REST_DURATION = 10;
+let currentIdx = 0;
+let timeLeft = 0;
+let isPaused = false;
+let isResting = false;
+let timerId = null;
+let audioCtx = null;
+
+const sectionEl = document.getElementById('section');
+const stepCountEl = document.getElementById('step-count');
+const nameEl = document.getElementById('exercise-name');
+const timerEl = document.getElementById('timer');
+const cuesEl = document.getElementById('cues');
+const progressEl = document.getElementById('progress');
+const backBtn = document.getElementById('back-btn');
+const pauseBtn = document.getElementById('pause-btn');
+const nextBtn = document.getElementById('next-btn');
+const cardEl = document.getElementById('card');
+
+function fmt(s) {
+  s = Math.max(0, s);
+  const m = Math.floor(s / 60);
+  const ss = s % 60;
+  return `${String(m).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
+}
+
+function render() {
+  if (currentIdx >= total) {
+    renderFinished();
+    return;
+  }
+  const ex = exercises[currentIdx];
+  sectionEl.textContent = ex.section;
+  sectionEl.classList.remove('rest');
+  stepCountEl.textContent = `${currentIdx + 1} / ${total}`;
+  nameEl.textContent = ex.name;
+  cuesEl.innerHTML = ex.cues.map(c => `<li>${c}</li>`).join('');
+  progressEl.style.width = `${(currentIdx / total) * 100}%`;
+  backBtn.disabled = currentIdx === 0;
+  isPaused = false;
+  pauseBtn.textContent = '⏸ 一時停止';
+
+  // ページ冒頭の準備インターバル（最初のエクササイズを含む全エクササイズ）
+  isResting = true;
+  timeLeft = REST_DURATION;
+  timerEl.textContent = fmt(timeLeft);
+  timerEl.classList.remove('done', 'paused');
+  timerEl.classList.add('rest');
+  startTimer();
+}
+
+function startExercise() {
+  // 準備インターバル終了 → 本番タイマーへ
+  isResting = false;
+  const ex = exercises[currentIdx];
+  timeLeft = ex.duration;
+  timerEl.textContent = fmt(timeLeft);
+  timerEl.classList.remove('rest', 'done', 'paused');
+  startTimer();
+}
+
+function renderFinished() {
+  progressEl.style.width = '100%';
+  stepCountEl.textContent = `${total} / ${total}`;
+  sectionEl.textContent = '完了';
+  cardEl.innerHTML = `
+    <div class="finished">
+      <h2>30分終了 🎉</h2>
+      <p>お疲れさま。水を一口飲んで、舌の根と顎下を指でチェック。<br>翌朝に違和感が残ってないかも確認して。</p>
+      <button class="restart-btn" id="restart">最初から</button>
+    </div>
+  `;
+  document.getElementById('restart').addEventListener('click', () => {
+    currentIdx = 0;
+    cardEl.innerHTML = `
+      <div class="exercise-name" id="exercise-name"></div>
+      <div class="timer" id="timer"></div>
+      <ul class="cues" id="cues"></ul>
+      <div class="controls">
+        <button class="btn-secondary" id="back-btn">← 戻る</button>
+        <button class="btn-secondary" id="pause-btn">⏸ 一時停止</button>
+        <button class="btn-primary" id="next-btn">次へ →</button>
+      </div>
+    `;
+    rewireRefs();
+    render();
+  });
+  stopTimer();
+}
+
+function rewireRefs() {
+  window._nameEl = document.getElementById('exercise-name');
+  window._timerEl = document.getElementById('timer');
+  window._cuesEl = document.getElementById('cues');
+  window._backBtn = document.getElementById('back-btn');
+  window._pauseBtn = document.getElementById('pause-btn');
+  window._nextBtn = document.getElementById('next-btn');
+  // reassign globals used by render
+  Object.assign(window, {});
+  // simpler: just reload the elements via document
+  // We will overwrite the const-defined ones by reassigning... but they're const.
+  // Easier solution: reload the page
+  location.reload();
+}
+
+function startTimer() {
+  stopTimer();
+  timerId = setInterval(() => {
+    if (isPaused) return;
+    timeLeft--;
+    timerEl.textContent = fmt(timeLeft);
+    if (timeLeft <= 0) {
+      stopTimer();
+      if (isResting) {
+        // 準備インターバル終了 → 本番タイマー開始（同じページ）
+        try { playBeep(880, 0.18); } catch(e) {}
+        startExercise();
+      } else {
+        // 本番終了 → 次のエクササイズへ
+        timerEl.classList.add('done');
+        try { playBeep(); } catch(e) {}
+        setTimeout(() => {
+          currentIdx++;
+          render();
+        }, 700);
+      }
+    }
+  }, 1000);
+}
+
+function stopTimer() {
+  if (timerId) {
+    clearInterval(timerId);
+    timerId = null;
+  }
+}
+
+function playBeep(freq = 660, dur = 0.25) {
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.frequency.value = freq;
+    osc.type = 'sine';
+    gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+    osc.connect(gain).connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + dur);
+  } catch(e) {}
+}
+
+backBtn.addEventListener('click', () => {
+  if (currentIdx > 0) {
+    currentIdx--;
+    render();
+  }
+});
+nextBtn.addEventListener('click', () => {
+  stopTimer();
+  if (isResting) {
+    // 準備中の次へ = 準備スキップして本番開始
+    startExercise();
+  } else {
+    // 本番中の次へ = 次のエクササイズへ（準備からスタート）
+    currentIdx++;
+    render();
+  }
+});
+pauseBtn.addEventListener('click', () => {
+  isPaused = !isPaused;
+  pauseBtn.textContent = isPaused ? '▶ 再開' : '⏸ 一時停止';
+  timerEl.classList.toggle('paused', isPaused);
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === ' ') { e.preventDefault(); pauseBtn.click(); }
+  else if (e.key === 'ArrowRight') nextBtn.click();
+  else if (e.key === 'ArrowLeft') backBtn.click();
+});
+
+render();
+</script>
+</body>
+</html>

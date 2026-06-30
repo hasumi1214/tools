@@ -1,0 +1,893 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pitch & Harmony Mini Trainer</title>
+<style>
+:root {
+  --bg: #f5f2eb;
+  --card: #ffffff;
+  --ink: #2a2e3d;
+  --muted: #7a8294;
+  --accent: #4a8b8b;
+  --accent-soft: #e0ecec;
+  --warn: #c97a5e;
+  --good: #6b9b7e;
+  --line: #e8e3d5;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding: 16px;
+  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic UI", sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 15px;
+  line-height: 1.55;
+}
+.container { max-width: 720px; margin: 0 auto; }
+h1 { font-size: 20px; margin: 0 0 6px; font-weight: 700; letter-spacing: 0.5px; }
+.subtitle { color: var(--muted); font-size: 12px; margin-bottom: 24px; }
+
+.card {
+  background: var(--card);
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  border: 1px solid var(--line);
+}
+
+.module-list { display: grid; gap: 12px; }
+.module-btn {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 16px 20px;
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 15px;
+  color: var(--ink);
+  transition: all 0.15s;
+}
+.module-btn:hover { border-color: var(--accent); background: var(--accent-soft); }
+.module-btn .num { color: var(--accent); font-weight: 700; margin-right: 8px; }
+.module-btn .name { font-weight: 600; }
+.module-btn .desc { font-size: 12px; color: var(--muted); margin-top: 4px; }
+.module-btn .dur { float: right; color: var(--muted); font-size: 12px; }
+
+.btn {
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn:hover { filter: brightness(1.08); }
+.btn-ghost {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--line);
+}
+
+.session-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.session-title { font-weight: 600; }
+.session-timer {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--accent);
+}
+
+.pitch-display {
+  text-align: center;
+  padding: 20px 0;
+}
+.target-label { font-size: 12px; color: var(--muted); letter-spacing: 1px; }
+.target-note { font-size: 44px; font-weight: 700; letter-spacing: 1px; margin: 4px 0; }
+.target-detail { font-size: 13px; color: var(--muted); }
+
+.cents-bar {
+  position: relative;
+  height: 64px;
+  margin: 24px 0;
+  background: var(--accent-soft);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.cents-bar .zone-good {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 16%;
+  transform: translateX(-50%);
+  background: rgba(107, 155, 126, 0.25);
+}
+.cents-bar .center-line {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--accent);
+  opacity: 0.5;
+}
+.cents-bar .needle {
+  position: absolute;
+  top: 6px;
+  bottom: 22px;
+  width: 4px;
+  background: var(--ink);
+  border-radius: 2px;
+  transition: left 80ms ease, background 200ms;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.cents-bar .needle.on-target { background: var(--good); }
+.cents-bar .needle.off { background: var(--warn); }
+.cents-bar .scale-labels {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 4px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--muted);
+  padding: 0 6px;
+}
+
+.detected-display {
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.detected-display strong { color: var(--ink); font-weight: 600; }
+
+.counter {
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 8px;
+}
+.counter .big {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--accent);
+  display: block;
+}
+
+.degree-buttons {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin: 24px 0;
+}
+.degree-btn {
+  background: var(--card);
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  padding: 18px 6px;
+  font-family: inherit;
+  font-size: 15px;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.1s;
+}
+.degree-btn:hover:not(:disabled) { border-color: var(--accent); }
+.degree-btn:active:not(:disabled) { transform: scale(0.97); }
+.degree-btn .deg-num { font-size: 24px; font-weight: 700; color: var(--accent); display: block; }
+.degree-btn .deg-name { font-size: 11px; color: var(--muted); margin-top: 4px; display: block; }
+.degree-btn.correct { background: rgba(107, 155, 126, 0.15); border-color: var(--good); }
+.degree-btn.wrong { background: rgba(201, 122, 94, 0.15); border-color: var(--warn); }
+.degree-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.feedback {
+  text-align: center;
+  font-size: 14px;
+  min-height: 24px;
+  margin-top: 8px;
+}
+.feedback.good { color: var(--good); font-weight: 600; }
+.feedback.bad { color: var(--warn); }
+
+.summary-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+}
+.summary-table td {
+  padding: 10px 4px;
+  border-bottom: 1px solid var(--line);
+  font-size: 14px;
+}
+.summary-table td:last-child { text-align: right; font-weight: 600; }
+
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.stat-card {
+  background: var(--card);
+  border-radius: 10px;
+  padding: 12px 8px;
+  text-align: center;
+  border: 1px solid var(--line);
+}
+.stat-card .val { font-size: 22px; font-weight: 700; color: var(--accent); }
+.stat-card .lbl { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+.actions { display: flex; gap: 10px; margin-top: 18px; }
+
+.hidden { display: none !important; }
+
+.hint {
+  background: var(--accent-soft);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 12px;
+  color: var(--ink);
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+.hint strong { color: var(--accent); }
+
+.mic-permission {
+  background: #fff8e8;
+  border: 1px solid #e6d090;
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 12px;
+  color: #6a5a30;
+  margin-bottom: 12px;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- HOME -->
+  <div id="home-screen">
+    <h1>Pitch & Harmony Mini Trainer</h1>
+    <div class="subtitle">毎日10分で耳と発声の精度を上げる</div>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="val" id="stat-streak">0</div>
+        <div class="lbl">連続日数</div>
+      </div>
+      <div class="stat-card">
+        <div class="val" id="stat-pitch-acc">--</div>
+        <div class="lbl">ピッチ正答率</div>
+      </div>
+      <div class="stat-card">
+        <div class="val" id="stat-ear-acc">--</div>
+        <div class="lbl">度数正答率</div>
+      </div>
+    </div>
+
+    <div class="module-list">
+      <button class="module-btn" onclick="startModule(1)">
+        <span class="dur">2分</span>
+        <span class="num">①</span><span class="name">ドローン半音マッチ</span>
+        <div class="desc">基準音を聴きながら指定された音を正確に出す。±15セント以内を1秒キープでクリア。</div>
+      </button>
+      <button class="module-btn" onclick="startModule(2)">
+        <span class="dur">3分</span>
+        <span class="num">②</span><span class="name">度数当て</span>
+        <div class="desc">カデンツ後に鳴る音が主音から何度かを答える。Phase 1: 1, 3, 5, 8 のみ。</div>
+      </button>
+    </div>
+  </div>
+
+  <!-- MODULE 1: Drone -->
+  <div id="module1-screen" class="hidden">
+    <div class="card">
+      <div class="session-header">
+        <div class="session-title">① ドローン半音マッチ</div>
+        <div class="session-timer" id="m1-timer">2:00</div>
+      </div>
+
+      <div id="m1-mic-permission" class="mic-permission hidden">
+        マイクへのアクセスを許可してください
+      </div>
+
+      <div class="hint">
+        基準音（ドローン）が鳴り続けます。<strong>目標音</strong>に声を合わせて、針が中央の緑ゾーンで1秒キープでクリア。
+      </div>
+
+      <div class="pitch-display">
+        <div class="target-label">基準音 → 目標音</div>
+        <div class="target-note">
+          <span id="m1-drone-note" style="color: var(--muted);">C3</span>
+          <span style="font-size: 24px; color: var(--muted); margin: 0 8px;">→</span>
+          <span id="m1-target-note">E3</span>
+        </div>
+        <div class="target-detail" id="m1-target-detail">+4 半音 (長3度)</div>
+      </div>
+
+      <div class="cents-bar">
+        <div class="zone-good"></div>
+        <div class="center-line"></div>
+        <div class="needle" id="m1-needle"></div>
+        <div class="scale-labels">
+          <span>-50¢</span>
+          <span>0</span>
+          <span>+50¢</span>
+        </div>
+      </div>
+
+      <div class="detected-display">
+        検出: <strong id="m1-detected">--</strong> (<span id="m1-cents">--</span>¢)
+      </div>
+
+      <div class="counter">
+        <span class="big" id="m1-success">0</span>
+        クリア / <span id="m1-attempts">0</span> 試行
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-ghost" onclick="endModule()">中止</button>
+        <button class="btn" style="flex:1;" onclick="m1Skip()">スキップ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODULE 2: Degree -->
+  <div id="module2-screen" class="hidden">
+    <div class="card">
+      <div class="session-header">
+        <div class="session-title">② 度数当て</div>
+        <div class="session-timer" id="m2-timer">3:00</div>
+      </div>
+
+      <div class="hint">
+        カデンツ（I-IV-V-I）が鳴った後の音が、主音から何度かを答える。<strong>Phase 1: 1, 3, 5, 8 のみ</strong>。
+      </div>
+
+      <div class="pitch-display">
+        <div class="target-label" id="m2-status">準備中...</div>
+        <div class="target-note" id="m2-key">--</div>
+      </div>
+
+      <div class="degree-buttons">
+        <button class="degree-btn" data-deg="1" onclick="m2Answer(1)" disabled>
+          <span class="deg-num">1</span><span class="deg-name">ド (主音)</span>
+        </button>
+        <button class="degree-btn" data-deg="3" onclick="m2Answer(3)" disabled>
+          <span class="deg-num">3</span><span class="deg-name">ミ</span>
+        </button>
+        <button class="degree-btn" data-deg="5" onclick="m2Answer(5)" disabled>
+          <span class="deg-num">5</span><span class="deg-name">ソ</span>
+        </button>
+        <button class="degree-btn" data-deg="8" onclick="m2Answer(8)" disabled>
+          <span class="deg-num">8</span><span class="deg-name">ド↑</span>
+        </button>
+      </div>
+
+      <div class="feedback" id="m2-feedback">&nbsp;</div>
+
+      <div class="counter">
+        <span class="big" id="m2-correct">0</span>
+        正解 / <span id="m2-total">0</span> 問
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-ghost" onclick="endModule()">中止</button>
+        <button class="btn" style="flex:1;" onclick="m2Replay()">もう一度聴く</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUMMARY -->
+  <div id="summary-screen" class="hidden">
+    <div class="card">
+      <h1 id="summary-title">セッション終了</h1>
+      <div class="subtitle">お疲れさま</div>
+      <table class="summary-table" id="summary-table"></table>
+      <div class="actions">
+        <button class="btn" style="flex:1;" onclick="goHome()">ホームに戻る</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ============= STATE =============
+let audioCtx = null;
+let micStream = null;
+let analyser = null;
+let drone = null;
+let pitchRAF = null;
+let sessionTimer = null;
+let sessionRemaining = 0;
+
+const state = {
+  module: null,
+  m1: { droneFreq: 0, droneMidi: 0, targetMidi: 0, holdStart: 0, success: 0, attempts: 0 },
+  m2: { key: 60, degree: 0, awaitingAnswer: false, correct: 0, total: 0, scheduled: [] }
+};
+
+// ============= STORAGE =============
+function loadStats() {
+  try {
+    const s = JSON.parse(localStorage.getItem('pht_stats') || '{}');
+    return { streak: 0, lastDate: null, pitchHist: [], earHist: [], ...s };
+  } catch(e) { return { streak: 0, lastDate: null, pitchHist: [], earHist: [] }; }
+}
+function saveStats(stats) {
+  try { localStorage.setItem('pht_stats', JSON.stringify(stats)); } catch(e) {}
+}
+function updateHome() {
+  const s = loadStats();
+  document.getElementById('stat-streak').textContent = s.streak;
+  const pAvg = s.pitchHist.length ? Math.round(100 * s.pitchHist.reduce((a,b)=>a+b,0) / s.pitchHist.length) : null;
+  const eAvg = s.earHist.length ? Math.round(100 * s.earHist.reduce((a,b)=>a+b,0) / s.earHist.length) : null;
+  document.getElementById('stat-pitch-acc').textContent = pAvg != null ? pAvg + '%' : '--';
+  document.getElementById('stat-ear-acc').textContent = eAvg != null ? eAvg + '%' : '--';
+}
+function recordSession(module, acc) {
+  const s = loadStats();
+  const today = new Date().toISOString().slice(0, 10);
+  if (s.lastDate !== today) {
+    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+    s.streak = (s.lastDate === yesterday) ? s.streak + 1 : 1;
+    s.lastDate = today;
+  }
+  if (module === 1) s.pitchHist.push(acc);
+  else if (module === 2) s.earHist.push(acc);
+  if (s.pitchHist.length > 30) s.pitchHist = s.pitchHist.slice(-30);
+  if (s.earHist.length > 30) s.earHist = s.earHist.slice(-30);
+  saveStats(s);
+}
+
+// ============= AUDIO ENGINE =============
+function ensureAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+}
+
+function startDrone(freq) {
+  ensureAudio();
+  stopDrone();
+  drone = { oscs: [], gain: audioCtx.createGain() };
+  const now = audioCtx.currentTime;
+  drone.gain.gain.setValueAtTime(0, now);
+  drone.gain.gain.linearRampToValueAtTime(0.16, now + 0.4);
+  drone.gain.connect(audioCtx.destination);
+  [
+    { mult: 1, gain: 1.0 },
+    { mult: 2, gain: 0.30 },
+    { mult: 3, gain: 0.10 },
+    { mult: 4, gain: 0.04 }
+  ].forEach(({mult, gain}) => {
+    const osc = audioCtx.createOscillator();
+    osc.frequency.value = freq * mult;
+    osc.type = 'sine';
+    const g = audioCtx.createGain();
+    g.gain.value = gain;
+    osc.connect(g).connect(drone.gain);
+    osc.start();
+    drone.oscs.push(osc);
+  });
+}
+function stopDrone() {
+  if (!drone) return;
+  const now = audioCtx.currentTime;
+  try {
+    drone.gain.gain.cancelScheduledValues(now);
+    drone.gain.gain.setValueAtTime(drone.gain.gain.value, now);
+    drone.gain.gain.linearRampToValueAtTime(0, now + 0.25);
+  } catch(e) {}
+  const oscs = drone.oscs;
+  setTimeout(() => oscs.forEach(o => { try { o.stop(); } catch(e) {} }), 350);
+  drone = null;
+}
+
+function playPianoNote(freq, duration = 0.6, vol = 0.25) {
+  ensureAudio();
+  const now = audioCtx.currentTime;
+  const master = audioCtx.createGain();
+  master.gain.setValueAtTime(0, now);
+  master.gain.linearRampToValueAtTime(vol, now + 0.005);
+  master.gain.exponentialRampToValueAtTime(0.001, now + duration);
+  master.connect(audioCtx.destination);
+  [
+    { mult: 1, gain: 1.0, type: 'triangle' },
+    { mult: 2, gain: 0.4, type: 'sine' },
+    { mult: 3, gain: 0.15, type: 'sine' },
+    { mult: 4, gain: 0.08, type: 'sine' }
+  ].forEach(({mult, gain, type}) => {
+    const osc = audioCtx.createOscillator();
+    osc.frequency.value = freq * mult;
+    osc.type = type;
+    const g = audioCtx.createGain();
+    g.gain.value = gain;
+    osc.connect(g).connect(master);
+    osc.start(now);
+    osc.stop(now + duration + 0.05);
+  });
+}
+
+function playChord(midis, duration = 0.7, vol = 0.18) {
+  midis.forEach(m => playPianoNote(midiToFreq(m), duration, vol / Math.sqrt(midis.length)));
+}
+
+// ============= NOTE UTILS =============
+const NOTE_NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+function midiToFreq(midi) { return 440 * Math.pow(2, (midi - 69) / 12); }
+function freqToMidi(freq) { return 69 + 12 * Math.log2(freq / 440); }
+function midiToName(midi) {
+  const m = Math.round(midi);
+  return NOTE_NAMES[((m % 12) + 12) % 12] + (Math.floor(m / 12) - 1);
+}
+
+const INTERVAL_NAMES = {
+  '-5': '完全4度下', '-4': '長3度下', '-3': '短3度下', '-2': '長2度下', '-1': '短2度下',
+  '1': '短2度', '2': '長2度', '3': '短3度', '4': '長3度',
+  '5': '完全4度', '6': '増4度', '7': '完全5度'
+};
+
+// ============= MIC + PITCH DETECTION =============
+async function startMic() {
+  if (micStream) return true;
+  ensureAudio();
+  const el = document.getElementById('m1-mic-permission');
+  try {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      throw new Error('このブラウザはマイクに対応していません (mediaDevices undefined)');
+    }
+    // iOS Safari は詳細な制約を弾くことがあるので段階的に試す
+    try {
+      micStream = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false }
+      });
+    } catch (constraintErr) {
+      // フォールバック: シンプルな制約
+      micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    }
+    const tracks = micStream.getAudioTracks();
+    if (!tracks.length) throw new Error('オーディオトラックなし');
+    const src = audioCtx.createMediaStreamSource(micStream);
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 2048;
+    src.connect(analyser);
+    el.classList.add('hidden');
+    return true;
+  } catch(e) {
+    el.classList.remove('hidden');
+    const detail = (e.name || '') + (e.message ? (': ' + e.message) : '');
+    el.innerHTML = 'マイクが使えません: <strong>' + detail + '</strong><br>' +
+      '<small>iPhoneの場合: Claudeアプリ内ビューだとマイクが使えないことがあります。ファイルを「共有」→Safariで開く、もしくはPCで試してください。</small>' +
+      '<br><button class="btn" style="margin-top:8px;font-size:12px;padding:6px 12px;" onclick="retryMic()">再試行</button>';
+    return false;
+  }
+}
+async function retryMic() {
+  stopMic();
+  const ok = await startMic();
+  if (ok) startPitchLoop();
+}
+function stopMic() {
+  if (micStream) {
+    micStream.getTracks().forEach(t => t.stop());
+    micStream = null;
+    analyser = null;
+  }
+}
+
+// Chris Wilson's autocorrelation
+function autocorrelate(buf, sampleRate) {
+  const SIZE = buf.length;
+  const MAX_SAMPLES = Math.floor(SIZE / 2);
+  let best_offset = -1;
+  let best_correlation = 0;
+  let rms = 0;
+  let foundGoodCorrelation = false;
+  const correlations = new Array(MAX_SAMPLES);
+
+  for (let i = 0; i < SIZE; i++) rms += buf[i] * buf[i];
+  rms = Math.sqrt(rms / SIZE);
+  if (rms < 0.01) return -1;
+
+  let lastCorrelation = 1;
+  for (let offset = 0; offset < MAX_SAMPLES; offset++) {
+    let correlation = 0;
+    for (let i = 0; i < MAX_SAMPLES; i++) {
+      correlation += Math.abs(buf[i] - buf[i + offset]);
+    }
+    correlation = 1 - (correlation / MAX_SAMPLES);
+    correlations[offset] = correlation;
+    if (correlation > 0.9 && correlation > lastCorrelation) {
+      foundGoodCorrelation = true;
+      if (correlation > best_correlation) {
+        best_correlation = correlation;
+        best_offset = offset;
+      }
+    } else if (foundGoodCorrelation) {
+      const shift = (correlations[best_offset + 1] - correlations[best_offset - 1]) / correlations[best_offset];
+      return sampleRate / (best_offset + (8 * shift));
+    }
+    lastCorrelation = correlation;
+  }
+  if (best_correlation > 0.01) return sampleRate / best_offset;
+  return -1;
+}
+
+// ============= SCREEN MGMT =============
+function showScreen(id) {
+  ['home-screen', 'module1-screen', 'module2-screen', 'summary-screen'].forEach(s => {
+    document.getElementById(s).classList.toggle('hidden', s !== id);
+  });
+}
+function goHome() {
+  showScreen('home-screen');
+  updateHome();
+}
+
+// ============= SESSION TIMER =============
+function startSessionTimer(seconds, displayEl, onEnd) {
+  sessionRemaining = seconds;
+  const update = () => {
+    const m = Math.floor(sessionRemaining / 60);
+    const s = sessionRemaining % 60;
+    displayEl.textContent = m + ':' + s.toString().padStart(2, '0');
+  };
+  update();
+  clearInterval(sessionTimer);
+  sessionTimer = setInterval(() => {
+    sessionRemaining--;
+    update();
+    if (sessionRemaining <= 0) {
+      clearInterval(sessionTimer);
+      sessionTimer = null;
+      onEnd();
+    }
+  }, 1000);
+}
+
+// ============= MODULE 1: DRONE =============
+async function startModule(num) {
+  ensureAudio();
+  state.module = num;
+  if (num === 1) {
+    showScreen('module1-screen');
+    state.m1 = { droneFreq: 0, droneMidi: 0, targetMidi: 0, holdStart: 0, success: 0, attempts: 0 };
+    updateM1Counter();
+    const ok = await startMic();
+    const droneMidi = 48; // C3
+    state.m1.droneMidi = droneMidi;
+    state.m1.droneFreq = midiToFreq(droneMidi);
+    document.getElementById('m1-drone-note').textContent = midiToName(droneMidi);
+    startDrone(state.m1.droneFreq);
+    m1NextTarget();
+    if (ok) startPitchLoop();
+    startSessionTimer(120, document.getElementById('m1-timer'), m1End);
+  } else if (num === 2) {
+    showScreen('module2-screen');
+    state.m2 = { key: 0, degree: 0, awaitingAnswer: false, correct: 0, total: 0, scheduled: [] };
+    updateM2Counter();
+    startSessionTimer(180, document.getElementById('m2-timer'), m2End);
+    setTimeout(m2NextRound, 500);
+  }
+}
+
+function m1NextTarget() {
+  // Bias toward small intervals (semitone-focused practice)
+  const choices = [-2, -1, -1, 1, 1, 2, 2, 3, 4, 5];
+  const off = choices[Math.floor(Math.random() * choices.length)];
+  state.m1.targetMidi = state.m1.droneMidi + off;
+  state.m1.holdStart = 0;
+  document.getElementById('m1-target-note').textContent = midiToName(state.m1.targetMidi);
+  const sign = off > 0 ? '+' : '';
+  const name = INTERVAL_NAMES[String(off)] || '';
+  document.getElementById('m1-target-detail').textContent = sign + off + ' 半音' + (name ? ' (' + name + ')' : '');
+}
+
+function startPitchLoop() {
+  if (!analyser) return;
+  const buf = new Float32Array(analyser.fftSize);
+  let lastUpdate = 0;
+  const tick = (ts) => {
+    if (!analyser) return;
+    if (!ts || ts - lastUpdate >= 50) {
+      lastUpdate = ts || 0;
+      analyser.getFloatTimeDomainData(buf);
+      const freq = autocorrelate(buf, audioCtx.sampleRate);
+      const needle = document.getElementById('m1-needle');
+      const detEl = document.getElementById('m1-detected');
+      const centEl = document.getElementById('m1-cents');
+      if (freq < 0 || freq < 60 || freq > 1200) {
+        needle.style.left = '50%';
+        needle.classList.remove('on-target', 'off');
+        detEl.textContent = '--';
+        centEl.textContent = '--';
+        state.m1.holdStart = 0;
+      } else {
+        const detMidi = freqToMidi(freq);
+        const centsOff = (detMidi - state.m1.targetMidi) * 100;
+        const clamped = Math.max(-60, Math.min(60, centsOff));
+        const pct = 50 + (clamped / 60) * 50;
+        needle.style.left = pct + '%';
+        detEl.textContent = midiToName(detMidi);
+        centEl.textContent = (centsOff >= 0 ? '+' : '') + centsOff.toFixed(0);
+        if (Math.abs(centsOff) <= 15) {
+          needle.classList.add('on-target');
+          needle.classList.remove('off');
+          if (!state.m1.holdStart) state.m1.holdStart = performance.now();
+          else if (performance.now() - state.m1.holdStart >= 1000) {
+            m1Success();
+          }
+        } else {
+          needle.classList.remove('on-target');
+          if (Math.abs(centsOff) > 35) needle.classList.add('off');
+          else needle.classList.remove('off');
+          state.m1.holdStart = 0;
+        }
+      }
+    }
+    pitchRAF = requestAnimationFrame(tick);
+  };
+  pitchRAF = requestAnimationFrame(tick);
+}
+
+function m1Success() {
+  state.m1.success++;
+  state.m1.attempts++;
+  updateM1Counter();
+  m1NextTarget();
+}
+function m1Skip() {
+  state.m1.attempts++;
+  updateM1Counter();
+  m1NextTarget();
+}
+function updateM1Counter() {
+  document.getElementById('m1-success').textContent = state.m1.success;
+  document.getElementById('m1-attempts').textContent = state.m1.attempts;
+}
+function m1End() {
+  if (pitchRAF) { cancelAnimationFrame(pitchRAF); pitchRAF = null; }
+  stopDrone();
+  stopMic();
+  const acc = state.m1.attempts > 0 ? state.m1.success / state.m1.attempts : 0;
+  recordSession(1, acc);
+  showSummary('① ドローン半音マッチ', [
+    ['クリア', state.m1.success],
+    ['試行', state.m1.attempts],
+    ['正答率', Math.round(acc * 100) + '%']
+  ]);
+}
+
+// ============= MODULE 2: DEGREE =============
+function updateM2Counter() {
+  document.getElementById('m2-correct').textContent = state.m2.correct;
+  document.getElementById('m2-total').textContent = state.m2.total;
+}
+
+function clearM2Timeouts() {
+  state.m2.scheduled.forEach(id => clearTimeout(id));
+  state.m2.scheduled = [];
+}
+
+function m2NextRound() {
+  clearM2Timeouts();
+  // Random key C3..B3
+  const keyMidi = 48 + Math.floor(Math.random() * 12);
+  state.m2.key = keyMidi;
+  document.getElementById('m2-key').textContent = midiToName(keyMidi).replace(/\d+$/, '') + ' major';
+  document.getElementById('m2-status').textContent = 'カデンツ再生中...';
+  document.getElementById('m2-feedback').innerHTML = '&nbsp;';
+  state.m2.awaitingAnswer = false;
+  document.querySelectorAll('.degree-btn').forEach(b => {
+    b.classList.remove('correct', 'wrong');
+    b.disabled = true;
+  });
+
+  const k = keyMidi;
+  // I - IV - V - I
+  playChord([k, k+4, k+7]);
+  state.m2.scheduled.push(setTimeout(() => playChord([k+5, k+9, k+12]), 600));
+  state.m2.scheduled.push(setTimeout(() => playChord([k+7, k+11, k+14]), 1200));
+  state.m2.scheduled.push(setTimeout(() => playChord([k, k+4, k+7]), 1800));
+
+  // Target note
+  const degrees = [1, 3, 5, 8];
+  const degree = degrees[Math.floor(Math.random() * degrees.length)];
+  state.m2.degree = degree;
+  const semis = { 1: 0, 3: 4, 5: 7, 8: 12 };
+  const targetMidi = k + 12 + semis[degree];
+
+  state.m2.scheduled.push(setTimeout(() => {
+    document.getElementById('m2-status').textContent = '目標音 ♪';
+    playPianoNote(midiToFreq(targetMidi), 1.4, 0.3);
+  }, 2700));
+  state.m2.scheduled.push(setTimeout(() => {
+    document.getElementById('m2-status').textContent = '何度？';
+    state.m2.awaitingAnswer = true;
+    document.querySelectorAll('.degree-btn').forEach(b => b.disabled = false);
+  }, 3000));
+}
+
+function m2Answer(deg) {
+  if (!state.m2.awaitingAnswer) return;
+  state.m2.awaitingAnswer = false;
+  state.m2.total++;
+  const correct = deg === state.m2.degree;
+  if (correct) state.m2.correct++;
+  document.querySelectorAll('.degree-btn').forEach(b => {
+    const d = parseInt(b.dataset.deg);
+    if (d === state.m2.degree) b.classList.add('correct');
+    if (d === deg && !correct) b.classList.add('wrong');
+    b.disabled = true;
+  });
+  const fb = document.getElementById('m2-feedback');
+  if (correct) { fb.textContent = '正解！'; fb.className = 'feedback good'; }
+  else { fb.textContent = '正解は ' + state.m2.degree + ' 度'; fb.className = 'feedback bad'; }
+  updateM2Counter();
+  state.m2.scheduled.push(setTimeout(() => {
+    if (sessionRemaining > 0) m2NextRound();
+  }, 1600));
+}
+
+function m2Replay() {
+  if (!state.m2.awaitingAnswer) return;
+  const k = state.m2.key;
+  const semis = { 1: 0, 3: 4, 5: 7, 8: 12 };
+  const targetMidi = k + 12 + semis[state.m2.degree];
+  playPianoNote(midiToFreq(targetMidi), 1.4, 0.3);
+}
+
+function m2End() {
+  clearM2Timeouts();
+  const acc = state.m2.total > 0 ? state.m2.correct / state.m2.total : 0;
+  recordSession(2, acc);
+  showSummary('② 度数当て', [
+    ['正解', state.m2.correct],
+    ['出題数', state.m2.total],
+    ['正答率', Math.round(acc * 100) + '%']
+  ]);
+}
+
+// ============= COMMON =============
+function endModule() {
+  clearInterval(sessionTimer);
+  sessionTimer = null;
+  if (state.module === 1) {
+    if (pitchRAF) { cancelAnimationFrame(pitchRAF); pitchRAF = null; }
+    stopDrone();
+    stopMic();
+  } else if (state.module === 2) {
+    clearM2Timeouts();
+  }
+  goHome();
+}
+function showSummary(title, rows) {
+  document.getElementById('summary-title').textContent = title;
+  const tbl = document.getElementById('summary-table');
+  tbl.innerHTML = rows.map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('');
+  showScreen('summary-screen');
+}
+
+// ============= INIT =============
+updateHome();
+</script>
+
+</body>
+</html>
